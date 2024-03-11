@@ -2,7 +2,7 @@
 <div align="center">
 <p>
   <img src="https://raw.githubusercontent.com/DaQMinh/Zalojs/main/public/logo.svg" alt="Zalo">
-  <h4> Unstable , unreliable , minimalist 
+  <h4> Unstable , unreliable , minimalist
   <br/>Zalo Scraper library for Nodejs</h4>
 </p>
 
@@ -54,4 +54,10 @@ const prefix = "!";
   });
 })();
 
+```
+
+### Development
+
+```sh
+  npm run test:listen
 ```

@@ -12,6 +12,8 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "test": "nodemon test/main.ts",
+    "test:listen": "nodemon test/listen.ts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "lint": "tsc"
   },
   "dependencies": {

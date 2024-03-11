@@ -26,16 +26,17 @@ export default class Client {
     // Sets up event listeners, including 'initialized' event.
     private setupEventListeners(): void {
         eventEmitter.once('initialized', async () => {
-                this.user = await scrapeData(this.page);
-                if(this.user){
-                    store.dispatch(setName(this.user.name));
-                    store.dispatch(setBio(this.user.bio));
-                    store.dispatch(setBirth(this.user.birth));
-                    store.dispatch(setNumber(this.user.number));
-                    eventEmitter.emit('scraped');
-                } else {
-                    throw new Error("Can't get user info");       
-                }
+            this.user = await scrapeData(this.page);
+
+            if(this.user){
+                store.dispatch(setName(this.user.name));
+                store.dispatch(setBio(this.user.bio));
+                store.dispatch(setBirth(this.user.birth));
+                store.dispatch(setNumber(this.user.number));
+                eventEmitter.emit('scraped');
+            } else {
+                throw new Error("Can't get user info");
+            }
         });
     }
 
@@ -67,6 +68,6 @@ export default class Client {
         }
     }
     getAllMessage(){
-        return this.actions.getAllMessage()    
+        return this.actions.getAllMessage()
     }
 }

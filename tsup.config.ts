@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsup';
- 
+
 export default defineConfig({
     format: ['cjs', 'esm'],
     entry: ['./src/index.ts'],
@@ -8,4 +8,3 @@ export default defineConfig({
     skipNodeModulesBundle: true,
     clean: true,
 });
-
