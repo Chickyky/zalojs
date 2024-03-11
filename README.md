@@ -61,3 +61,7 @@ const prefix = "!";
 ```sh
   npm run test:listen
 ```
+or
+```sh
+  nodemon test/listen.ts
+```

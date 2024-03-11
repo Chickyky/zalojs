@@ -18,7 +18,6 @@ export default class Events {
         });
     }
 
-
     async on(event: string, callback: Function): Promise<void> {
         switch (event) {
             case "message":
@@ -34,6 +33,11 @@ export default class Events {
             case "ready":
                 eventEmitter.once('ready', () => callback());
                 break;
+
+            case "scraped":
+                eventEmitter.once('scraped', () => callback());
+                break;
+
             default:
                 console.log("It's something else.");
         }

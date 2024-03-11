@@ -7,19 +7,23 @@ export function getAllMessage(){
 }
 export async function messageListener(page: Page, callback: Function, user: User | null): Promise<void> {
     let isRunning = false;
+
     page.on('request', async (request: HTTPRequest) => {
-       
         if (request.url().startsWith("https://tt-group-wpa.chat.zalo.me/api/group/deliveredv2?zpw_ver=628&zpw_type=30") && !isRunning) {
             const startTime = process.hrtime.bigint();
             isRunning = true
             // store.dispatch(toggle());
             const message = await getMessage(page, user);
+
             await page.evaluate((message) => {
                 var elementsByClass = document.querySelectorAll('.rel.zavatar-container.avatar--overlay');
+
                 elementsByClass.forEach(function (element) {
                     element.remove();
                 });
+
                 const messageIdArray = message.map(obj => obj.messageId);
+
                 messageIdArray.forEach(function (id) {
                     if (id) {
                         var element = document.getElementById(id);
@@ -33,8 +37,8 @@ export async function messageListener(page: Page, callback: Function, user: User
                         }
                     }
                 });
-
             }, message);
+
             if (message.length != 0 && message) {
                 message.forEach(element => {
                     messageArray.push({
@@ -44,12 +48,12 @@ export async function messageListener(page: Page, callback: Function, user: User
                         time : element.time
                     })
                 });
+
                 callback(message);
             }
+
             isRunning = false
-//22 mil second
-
+            //22 mil second
         }
-
     });
 }

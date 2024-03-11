@@ -1,22 +1,33 @@
-import puppeteer from 'puppeteer';
-import toConversation from '../actions/toConversation';
+import { CookieParam, PuppeteerLaunchOptions } from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
 import express from 'express';
 import http from 'http';
 import path from 'path';
 import { Server } from 'socket.io';
 import { EventEmitter } from 'events';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+
+import toConversation from '../actions/toConversation';
 
 interface InitOptions {
     groupName: string;
     groupID: string;
     headless?: boolean;
-    port? : boolean
+    port? : boolean;
+
+    cookie?: any;
+    localStorageItems?: any;
+    executablePath?: string;
 }
 
 const eventEmitter = new EventEmitter()
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+puppeteer.use(StealthPlugin());
+puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
 
 export default async function init(options: InitOptions) {
     const { groupName, groupID, headless = true , port = 3000 } = options;
@@ -27,11 +38,54 @@ export default async function init(options: InitOptions) {
     app.use(express.static(path.join(__dirname, 'public')));
 
     try {
-        const browser = await puppeteer.launch({ headless });
+        let launchOpts: PuppeteerLaunchOptions = {
+            headless,
+            args: [
+                // '--no-sandbox'
+                '--restore-last-session'
+            ],
+            ignoreDefaultArgs: [
+                '--enable-automation',
+                '--disable-blink-features'
+            ]
+        }
+
+        if (options.executablePath) {
+            launchOpts.executablePath = options.executablePath;
+        }
+
+        const browser = await puppeteer.launch(launchOpts);
         const page = await browser.newPage();
 
-        await page.goto('https://id.zalo.me/account?continue=https://chat.zalo.me');
-        await page.waitForSelector('#app > div > div.zLogin-layout > div.body > div.animated.fadeIn.body-container > div.content.animated.fadeIn > div > div > div.qrcode > div.qr-container > img');;
+        // await page.goto('https://id.zalo.me');
+        // await page.waitForNavigation();
+
+        await Promise.all([
+            page.goto('https://id.zalo.me'),
+            page.waitForNavigation(),
+        ]);
+
+        if (options.localStorageItems) {
+            await page.evaluate((items) => {
+                var keys = Object.keys(items);
+
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    localStorage.setItem(key, items[key]);
+                }
+            }, options.localStorageItems)
+        }
+
+        if (options.cookie) {
+            await page.setCookie(...options.cookie);
+
+            await page.goto('https://chat.zalo.me');
+            await page.waitForNavigation();
+            // await page.reload();
+        } else {
+            await page.goto('https://id.zalo.me/account?continue=https://chat.zalo.me');
+            await page.waitForSelector('#app > div > div.zLogin-layout > div.body > div.animated.fadeIn.body-container > div.content.animated.fadeIn > div > div > div.qrcode > div.qr-container > img');
+        }
 
         const imageSrc= await page.evaluate(() => {
             const imgElement = document.querySelector('#app > div > div.zLogin-layout > div.body > div.animated.fadeIn.body-container > div.content.animated.fadeIn > div > div > div.qrcode > div.qr-container > img') as HTMLImageElement
